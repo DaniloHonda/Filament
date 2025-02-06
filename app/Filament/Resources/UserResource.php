@@ -11,8 +11,11 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
@@ -56,7 +59,11 @@ class UserResource extends Resource
                             ->searchable()
                             ->preload()
                             ->live()
-                            ->required(),
+                            ->required()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('state_id', null);
+                                $set('city_id', null);
+                            }),
 
                         Select::make('state_id')
                             ->label('State')
@@ -65,6 +72,8 @@ class UserResource extends Resource
                                 ->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
+                            ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
+                            ->live()
                             ->required()
                             ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist() // Desativa se não houver estados
                             ),
@@ -72,8 +81,8 @@ class UserResource extends Resource
                         Select::make('city_id')
                             ->label('City')
                             ->options(fn (Get $get): Collection => City::query()
-                                        ->where('state_id', $get('state_id'))
-                                        ->pluck('name', 'id'))
+                                ->where('state_id', $get('state_id'))
+                                ->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
                             ->required()
@@ -104,7 +113,10 @@ class UserResource extends Resource
 
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    EditAction::make()
+                        ->icon('heroicon-o-pencil-square'),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
