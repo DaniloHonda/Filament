@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.fi-logo {
+    height: 100% !important;
+}
+
+.fi-simple-header-heading {
+    display: none;
+}
+
+.fi-simple-layout {
+    @apply bg-gradient-to-r from-sky-200 to-cyan-500;
+}
+
+.fi-ta-text {
+    @apply py-1
+}
+
+.fi-ta-table > .whitespace-nowrap {
+    @apply py-1
+}
+
+.fi-ta-cell > div:has(.flex) {
+    @apply py-1
+}
