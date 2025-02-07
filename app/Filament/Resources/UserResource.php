@@ -45,10 +45,12 @@ class UserResource extends Resource
                         TextInput::make('email')
                             ->email()
                             ->required()
+                            ->unique(table: 'users', ignorable: fn ($record) => $record)
                             ->maxLength(50),
                         TextInput::make('password')
                             ->password()
                             ->required()
+                            ->hiddenOn('edit')
                             ->maxLength(50),
                     ])->columns(3),
 
@@ -67,27 +69,30 @@ class UserResource extends Resource
 
                         Select::make('state_id')
                             ->label('State')
-                            ->options(fn (Get $get): Collection => State::query()
-                                ->where('country_id', $get('country_id'))
-                                ->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
                             ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
                             ->live()
-                            ->required()
-                            ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist() // Desativa se não houver estados
-                            ),
-
+                            ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
+                            ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())// Desativa se não houver estados
+                            ->options(fn (Get $get): Collection => State::query()
+                                ->where('country_id', $get('country_id'))
+                                ->pluck('name', 'id')),
                         Select::make('city_id')
                             ->label('City')
-                            ->options(fn (Get $get): Collection => City::query()
-                                ->where('state_id', $get('state_id'))
-                                ->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
-                            ->required()
-                            ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist() // Desativa cidades se não houver estados
-                            ),
+                            ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
+                            ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())// Desativa cidades se não houver estados
+                            ->options(fn (Get $get): Collection => City::query()
+                                ->where('state_id', $get('state_id'))
+                                ->pluck('name', 'id')),
+                        TextInput::make('address')
+                            ->label('Address')
+                            ->required(),
+                        TextInput::make('postal_code')
+                            ->label('Postal Code')
+                            ->required(),
                     ])->columns(3),
             ]);
     }
@@ -97,17 +102,26 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Name')
                     ->searchable(),
                 TextColumn::make('email')
+                    ->label('Email')
                     ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('country.name')
+                    ->label('Country')
+                    ->searchable(),
+                TextColumn::make('state.name')
+                    ->label('State')
+                    ->searchable(),
+                TextColumn::make('city.name')
+                    ->label('City')
+                    ->searchable(),
+                TextColumn::make('address')
+                    ->label('Address')
+                    ->searchable(),
+                TextColumn::make('postal_code')
+                    ->label('Postal Code')
+                    ->searchable(),
             ])
             ->filters([
 
