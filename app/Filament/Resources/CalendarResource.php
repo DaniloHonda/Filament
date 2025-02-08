@@ -20,7 +20,7 @@ class CalendarResource extends Resource
 
     protected static ?string $navigationGroup = 'Management';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
     protected static ?int $navigationSort = 2;
 
@@ -64,8 +64,7 @@ class CalendarResource extends Resource
                     ->label('Is Active?')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger'),
-
-            ])
+            ])->reorderable('order_column')
             ->filters([
                 //
             ])
@@ -74,9 +73,9 @@ class CalendarResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+
     }
 
     public static function getRelations(): array
