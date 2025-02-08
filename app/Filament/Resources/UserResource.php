@@ -9,6 +9,8 @@ use App\Models\User;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -19,6 +21,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
+use Illuminate\Support\HtmlString;
 
 class UserResource extends Resource
 {
@@ -36,65 +39,80 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Personal Info')
-                    ->schema([
-                        TextInput::make('name')
-                            ->helperText(str('Your **full name** here')->markdown()->toHtmlString())
-                            ->required()
-                            ->maxLength(50),
-                        TextInput::make('email')
-                            ->email()
-                            ->required()
-                            ->unique(table: 'users', ignorable: fn ($record) => $record)
-                            ->maxLength(50),
-                        TextInput::make('password')
-                            ->password()
-                            ->required()
-                            ->hiddenOn('edit')
-                            ->maxLength(50),
-                    ])->columns(3),
+                Wizard::make(
+                    [
+                        Step::make('Personal Info')
+                            ->icon('heroicon-m-shopping-bag')
+                            ->schema([
+                                Section::make('Personal Info')
+                                    ->schema([
+                                        TextInput::make('name')
+                                            ->helperText(str('Your **full name** here')->markdown()->toHtmlString())
+                                            ->required()
+                                            ->maxLength(50),
+                                        TextInput::make('email')
+                                            ->email()
+                                            ->required()
+                                            ->unique(table: 'users', ignorable: fn ($record) => $record)
+                                            ->maxLength(50),
+                                        TextInput::make('password')
+                                            ->password()
+                                            ->required()
+                                            ->hiddenOn('edit')
+                                            ->maxLength(50),
+                                    ]),
+                            ]),
+                        Step::make('Adress Info')
+                            ->schema([
 
-                Section::make('Address Info')
-                    ->schema([
-                        Select::make('country_id')
-                            ->relationship(name: 'country', titleAttribute: 'name')
-                            ->searchable()
-                            ->preload()
-                            ->live()
-                            ->required()
-                            ->afterStateUpdated(function (Set $set) {
-                                $set('state_id', null);
-                                $set('city_id', null);
-                            }),
+                                Section::make('Address Info')
+                                    ->schema([
+                                        Select::make('country_id')
+                                            ->columnSpanFull()
+                                            ->relationship(name: 'country', titleAttribute: 'name')
+                                            ->searchable()
+                                            ->preload()
+                                            ->live()
+                                            ->required()
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('state_id', null);
+                                                $set('city_id', null);
+                                            }),
 
-                        Select::make('state_id')
-                            ->label('State')
-                            ->searchable()
-                            ->preload()
-                            ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
-                            ->live()
-                            ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
-                            ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())// Desativa se não houver estados
-                            ->options(fn (Get $get): Collection => State::query()
-                                ->where('country_id', $get('country_id'))
-                                ->pluck('name', 'id')),
-                        Select::make('city_id')
-                            ->label('City')
-                            ->searchable()
-                            ->preload()
-                            ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
-                            ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())// Desativa cidades se não houver estados
-                            ->options(fn (Get $get): Collection => City::query()
-                                ->where('state_id', $get('state_id'))
-                                ->pluck('name', 'id')),
-                        TextInput::make('address')
-                            ->label('Address')
-                            ->required(),
-                        TextInput::make('postal_code')
-                            ->label('Postal Code')
-                            ->required(),
-                    ])->columns(3),
-            ]);
+                                        Select::make('state_id')
+                                            ->label('State')
+                                            ->searchable()
+                                            ->preload()
+                                            ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
+                                            ->live()
+                                            ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
+                                            ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())// Desativa se não houver estados
+                                            ->options(fn (Get $get): Collection => State::query()
+                                                ->where('country_id', $get('country_id'))
+                                                ->pluck('name', 'id')),
+                                        Select::make('city_id')
+                                            ->label('City')
+                                            ->searchable()
+                                            ->preload()
+                                            ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
+                                            ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())// Desativa cidades se não houver estados
+                                            ->options(fn (Get $get): Collection => City::query()
+                                                ->where('state_id', $get('state_id'))
+                                                ->pluck('name', 'id')),
+                                        TextInput::make('address')
+                                            ->label('Address')
+                                            ->required(),
+                                        TextInput::make('postal_code')
+                                            ->label('Postal Code')
+                                            ->required(),
+                                    ]),
+                            ]),
+                    ])
+                    ->submitAction(new HtmlString('<button type="submit">Submit</button>')),
+
+            ]
+            );
+
     }
 
     public static function table(Table $table): Table

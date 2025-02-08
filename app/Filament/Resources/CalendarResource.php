@@ -55,7 +55,7 @@ class CalendarResource extends Resource
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable(''),
                 TextColumn::make('year')
                     ->label('Year')
                     ->searchable()
@@ -64,7 +64,10 @@ class CalendarResource extends Resource
                     ->label('Is Active?')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
                     ->color(fn (bool $state): string => $state ? 'success' : 'danger'),
-            ])->reorderable('order_column')
+            ])
+            ->defaultSort('order_column') // 🔥 Ordenação padrão
+            ->persistSortInSession() // 🔥 Mantém a ordenação na sessão
+            ->reorderable('order_column', true)
             ->filters([
                 //
             ])

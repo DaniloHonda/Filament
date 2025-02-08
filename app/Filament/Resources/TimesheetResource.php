@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TimesheetResource\Pages;
 use App\Models\Timesheet;
 use Filament\Forms;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -39,9 +38,9 @@ class TimesheetResource extends Resource
                     ])
                     ->required()
                     ->default('Select one option'),
-                Forms\Components\DatePicker::make('day_in')
+                Forms\Components\DateTimePicker::make('day_in')
                     ->required(),
-                Forms\Components\DatePicker::make('day_out')
+                Forms\Components\DateTimePicker::make('day_out')
                     ->required(),
             ])->columns(3);
     }
@@ -78,7 +77,7 @@ class TimesheetResource extends Resource
                     ->options([
                         'work' => 'Working',
                         'pause' => 'In Pause',
-                    ])
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

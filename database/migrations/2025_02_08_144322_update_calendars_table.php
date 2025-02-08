@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('calendars', function (Blueprint $table) {
-            $table->integer('order_column')->default(0);
+            $table->integer('order_column')->nullable()->after('active');
         });
     }
 
