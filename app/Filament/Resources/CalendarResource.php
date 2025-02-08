@@ -10,13 +10,19 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class CalendarResource extends Resource
 {
     protected static ?string $model = Calendar::class;
 
+    protected static ?string $navigationGroup = 'Management';
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -26,13 +32,19 @@ class CalendarResource extends Resource
                     ->schema([
                         TextInput::make('name')
                             ->label('Name')
-                            ->require()
-                            ->maxLenght(50)
-                            ->unique(table: 'users', ignorable: fn ($record) => $record),
-                        Toggle::make('is_active')
+                            ->required()
+                            ->maxLength(50)
+                            ->unique(table: 'calendars', ignorable: fn ($record) => $record),
+                        TextInput::make('year')
+                            ->label('Year')
+                            ->numeric()
+                            ->minValue(1900) // Adjust as needed
+                            ->maxValue(date('Y'))
+                            ->required(),
+                        Toggle::make('active')
                             ->label('Is Active?')
                             ->required(),
-                    ]),
+                    ])->columns(2),
             ]);
     }
 
@@ -40,6 +52,18 @@ class CalendarResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('name')
+                    ->label('Name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('year')
+                    ->label('Year')
+                    ->searchable()
+                    ->sortable(),
+                IconColumn::make('active')
+                    ->label('Is Active?')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger'),
 
             ])
             ->filters([
