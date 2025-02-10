@@ -8,7 +8,6 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Wizard\Step;
@@ -22,6 +21,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
+use Illuminate\Support\HtmlString;
 
 class UserResource extends Resource
 {
@@ -39,141 +39,71 @@ class UserResource extends Resource
     {
         $operation = $form->getOperation();
 
-        if ($operation === 'create') {
-            return $form->schema([
-                Wizard::make([
-                    Step::make('Personal Info')
-                        ->icon('heroicon-m-shopping-bag')
-                        ->schema([
-                            Section::make('Personal Info')
-                                ->schema([
-                                    TextInput::make('name')
-                                        ->helperText(str('Your **full name** here')->markdown()->toHtmlString())
-                                        ->required()
-                                        ->maxLength(50),
-                                    TextInput::make('email')
-                                        ->email()
-                                        ->required()
-                                        ->unique(table: 'users', ignorable: fn ($record) => $record)
-                                        ->maxLength(50),
-                                    TextInput::make('password')
-                                        ->password()
-                                        ->required()
-                                        ->hiddenOn('edit')
-                                        ->maxLength(50),
-                                ]),
-                        ]),
-                    Step::make('Address Info')
-                        ->schema([
-                            Section::make('Address Info')
-                                ->schema([
-                                    Select::make('country_id')
-                                        ->columnSpanFull()
-                                        ->relationship(name: 'country', titleAttribute: 'name')
-                                        ->searchable()
-                                        ->preload()
-                                        ->live()
-                                        ->required()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('state_id', null);
-                                            $set('city_id', null);
-                                        }),
-                                    Select::make('state_id')
-                                        ->label('State')
-                                        ->searchable()
-                                        ->preload()
-                                        ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
-                                        ->live()
-                                        ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
-                                        ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())
-                                        ->options(fn (Get $get): Collection => State::query()
-                                            ->where('country_id', $get('country_id'))
-                                            ->pluck('name', 'id')),
-                                    Select::make('city_id')
-                                        ->label('City')
-                                        ->searchable()
-                                        ->preload()
-                                        ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
-                                        ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())
-                                        ->options(fn (Get $get): Collection => City::query()
-                                            ->where('state_id', $get('state_id'))
-                                            ->pluck('name', 'id')),
-                                    TextInput::make('address')
-                                        ->label('Address'),
-                                    TextInput::make('postal_code')
-                                        ->label('Postal Code'),
-                                ]),
-                        ]),
-                ]),
-            ]);
-        }
-
         return $form->schema([
-            Tabs::make('Tabs')
-                ->tabs([
-                    Tabs\Tab::make('Personal Information')
-                        ->schema([
-                            Section::make('Personal Info')
-                                ->icon('heroicon-m-shopping-bag')
-                                ->schema([
-                                    TextInput::make('name')
-                                        ->helperText(str('Your **full name** here')->markdown()->toHtmlString())
-                                        ->required()
-                                        ->maxLength(50),
-                                    TextInput::make('email')
-                                        ->email()
-                                        ->required()
-                                        ->unique(table: 'users', ignorable: fn ($record) => $record)
-                                        ->maxLength(50),
-                                    TextInput::make('password')
-                                        ->password()
-                                        ->required()
-                                        ->hiddenOn('edit')
-                                        ->maxLength(50),
-                                ]),
-                        ]),
-                    Tabs\Tab::make('Address Information')
-                        ->schema([
-                            Section::make('Address Info')
-                                ->schema([
-                                    Select::make('country_id')
-                                        ->columnSpanFull()
-                                        ->relationship(name: 'country', titleAttribute: 'name')
-                                        ->searchable()
-                                        ->preload()
-                                        ->live()
-                                        ->required()
-                                        ->afterStateUpdated(function (Set $set) {
-                                            $set('state_id', null);
-                                            $set('city_id', null);
-                                        }),
-                                    Select::make('state_id')
-                                        ->label('State')
-                                        ->searchable()
-                                        ->preload()
-                                        ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
-                                        ->live()
-                                        ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
-                                        ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())
-                                        ->options(fn (Get $get): Collection => State::query()
-                                            ->where('country_id', $get('country_id'))
-                                            ->pluck('name', 'id')),
-                                    Select::make('city_id')
-                                        ->label('City')
-                                        ->searchable()
-                                        ->preload()
-                                        ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
-                                        ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())
-                                        ->options(fn (Get $get): Collection => City::query()
-                                            ->where('state_id', $get('state_id'))
-                                            ->pluck('name', 'id')),
-                                    TextInput::make('address')
-                                        ->label('Address'),
-                                    TextInput::make('postal_code')
-                                        ->label('Postal Code'),
-                                ]),
-                        ]),
-                ]),
+            Wizard::make([
+                Step::make('Personal Info')
+                    ->icon('heroicon-m-shopping-bag')
+                    ->schema([
+                        Section::make('Personal Info')
+                            ->schema([
+                                TextInput::make('name')
+                                    ->helperText(str('Your **full name** here')->markdown()->toHtmlString())
+                                    ->required()
+                                    ->maxLength(50),
+                                TextInput::make('email')
+                                    ->email()
+                                    ->required()
+                                    ->unique(table: 'users', ignorable: fn ($record) => $record)
+                                    ->maxLength(50),
+                                TextInput::make('password')
+                                    ->password()
+                                    ->required()
+                                    ->hiddenOn('edit')
+                                    ->maxLength(50),
+                            ]),
+                    ]),
+                Step::make('Address Info')
+                    ->schema([
+                        Section::make('Address Info')
+                            ->schema([
+                                Select::make('country_id')
+                                    ->columnSpanFull()
+                                    ->relationship(name: 'country', titleAttribute: 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->live()
+                                    ->required()
+                                    ->afterStateUpdated(function (Set $set) {
+                                        $set('state_id', null);
+                                        $set('city_id', null);
+                                    }),
+                                Select::make('state_id')
+                                    ->label('State')
+                                    ->searchable()
+                                    ->preload()
+                                    ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
+                                    ->live()
+                                    ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
+                                    ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())
+                                    ->options(fn (Get $get): Collection => State::query()
+                                        ->where('country_id', $get('country_id'))
+                                        ->pluck('name', 'id')),
+                                Select::make('city_id')
+                                    ->label('City')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(fn (Get $get): bool => State::where('country_id', $get('country_id'))->exists())
+                                    ->disabled(fn (Get $get): bool => State::where('country_id', $get('country_id'))->doesntExist())
+                                    ->options(fn (Get $get): Collection => City::query()
+                                        ->where('state_id', $get('state_id'))
+                                        ->pluck('name', 'id')),
+                                TextInput::make('address')
+                                    ->label('Address'),
+                                TextInput::make('postal_code')
+                                    ->label('Postal Code'),
+                            ]),
+                    ]),
+            ])->columnSpanFull()->skippable(fn ($operation) => $operation === 'edit')->submitAction(new HtmlString('<button type="submit">Submit</button>')),
         ]);
     }
 

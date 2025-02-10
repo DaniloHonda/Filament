@@ -13,4 +13,9 @@ class CreateUser extends CreateRecord
     {
         return $this->getResource()::getUrl('index'); // Redirect to table view
     }
+
+    protected function getFormActions(): array
+    {
+        return [];
+    }
 }

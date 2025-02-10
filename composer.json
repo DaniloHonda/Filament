@@ -11,7 +11,7 @@
         "filament/filament": "^3.2",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
-        "spatie/eloquent-sortable": "^4.4"
+        "spatie/eloquent-sortable": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
