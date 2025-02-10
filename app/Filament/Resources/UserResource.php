@@ -2,27 +2,26 @@
 
 namespace App\Filament\Resources;
 
+use Altwaireb\World\Models\City;
+use Altwaireb\World\Models\State;
+use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
-use Filament\Tables;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use Altwaireb\World\Models\City;
 use Filament\Resources\Resource;
-use Altwaireb\World\Models\State;
-use Illuminate\Support\Collection;
-use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Section;
+use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Forms\Components\Wizard\Step;
-use App\Filament\Resources\UserResource\Pages;
+use Filament\Tables\Table;
+use Illuminate\Support\Collection;
 
 class UserResource extends Resource
 {
@@ -35,6 +34,7 @@ class UserResource extends Resource
     protected static ?int $navigationSort = 9;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+
     public static function form(Form $form): Form
     {
         $operation = $form->getOperation();
@@ -104,7 +104,7 @@ class UserResource extends Resource
                                         ->label('Postal Code'),
                                 ]),
                         ]),
-                ])
+                ]),
             ]);
         }
 
@@ -173,10 +173,9 @@ class UserResource extends Resource
                                         ->label('Postal Code'),
                                 ]),
                         ]),
-                ])
+                ]),
         ]);
     }
-
 
     public static function table(Table $table): Table
     {
